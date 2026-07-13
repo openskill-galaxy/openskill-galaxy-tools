@@ -77,28 +77,33 @@ async function main() {
       continue;
     }
 
-    if (status.output === '') {
-      // No changes, skip
+    const statusFull = await runGit(repo.path, 'status');
+    const isAhead = statusFull.success && statusFull.output.includes('ahead');
+
+    if (status.output === '' && !isAhead) {
+      // No changes, and not ahead of remote, skip
       continue;
     }
 
     updatedCount++;
-    console.log(`📦 Changes detected in ${repo.category}/${repo.name}. Syncing...`);
+    console.log(`📦 Syncing ${repo.category}/${repo.name}...`);
     
-    // 1. Git add
-    const addRes = await runGit(repo.path, 'add .');
-    if (!addRes.success) {
-      console.error(`   ❌ git add failed:`, addRes.error);
-      failCount++;
-      continue;
-    }
+    if (status.output !== '') {
+      // 1. Git add
+      const addRes = await runGit(repo.path, 'add .');
+      if (!addRes.success) {
+        console.error(`   ❌ git add failed:`, addRes.error);
+        failCount++;
+        continue;
+      }
 
-    // 2. Git commit
-    const commitRes = await runGit(repo.path, 'commit -m "style: optimize database schema and redesign premium visual UI"');
-    if (!commitRes.success) {
-      console.error(`   ❌ git commit failed:`, commitRes.error);
-      failCount++;
-      continue;
+      // 2. Git commit
+      const commitRes = await runGit(repo.path, 'commit -m "style: optimize database schema and redesign premium visual UI"');
+      if (!commitRes.success) {
+        console.error(`   ❌ git commit failed:`, commitRes.error);
+        failCount++;
+        continue;
+      }
     }
 
     // 3. Git push
