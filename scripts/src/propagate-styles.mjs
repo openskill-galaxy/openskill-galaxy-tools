@@ -5,6 +5,8 @@ const workspaceRoot = 'C:/WJH/Wonderful/openskill-galaxy';
 const templatePath = 'C:/WJH/Wonderful/openskill-galaxy/00-平台与协作/模块模板';
 
 const filesToCopy = [
+  'index.html',
+  'public/sw.js',
   'src/styles/index.css',
   'src/components/Layout.tsx',
   'src/components/Header.tsx',
