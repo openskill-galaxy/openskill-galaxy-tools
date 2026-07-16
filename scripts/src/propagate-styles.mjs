@@ -10,6 +10,7 @@ const filesToCopy = [
   'src/styles/index.css',
   'src/components/Layout.tsx',
   'src/components/Header.tsx',
+  'src/components/SearchBox.tsx',
   'src/components/QuestionPlayer.tsx',
   'tailwind.config.js'
 ];
