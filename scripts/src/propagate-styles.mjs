@@ -8,9 +8,11 @@ const filesToCopy = [
   'index.html',
   'public/sw.js',
   'src/styles/index.css',
+  'src/main.tsx',
   'src/components/Layout.tsx',
   'src/components/Header.tsx',
   'src/components/SearchBox.tsx',
+  'src/components/ErrorBoundary.tsx',
   'src/components/QuestionPlayer.tsx',
   'tailwind.config.js'
 ];
