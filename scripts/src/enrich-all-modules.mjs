@@ -64,7 +64,7 @@ const domainTemplates = {
       ],
       [
         { title: "文本向量化与嵌入技术", summary: "学习使用 Embedding 模型将文本片段转为多维稠密向量。" },
-        { title: "向量数据库索引与近似检索", summary: "了解 Milvus, Pinecone 等向量库的 HNSW 索引与 Cosine 检索实现。" }
+        { title: "向量数据库索引与近似检索", summary: "了解 Milvus, Pinecone 等向量库 of HNSW 索引与 Cosine 检索实现。" }
       ]
     ],
     code: "import openai\n\n# 激活 Few-shot 及 CoT 的提示词\nprompt = \"\"\"\n问题：商店里有10个苹果，卖了3个，又买了5个，现在有多少个？\n步骤：\n1. 初始有10个。\n2. 卖了3个：10 - 3 = 7 个。\n3. 又买5个：7 + 5 = 12 个。\n答案：12。\n\n问题：小明有5本书，送给朋友2本，自己买进3本，现在有多少本？\n步骤：\n\"\"\"\n\nresponse = openai.ChatCompletion.create(\n    model=\"gpt-4\",\n    messages=[{\"role\": \"user\", \"content\": prompt}]\n)",
@@ -252,12 +252,72 @@ ${template.code}
         });
       });
 
+      // 4. Generate Exams & link to questions
+      const questionIds = enrichedQuestions.map(q => q.id);
+      const enrichedExams = [
+        {
+          id: `${mId}-exam-1`,
+          slug: "final-exam",
+          title: `${mTitle} 核心期末综合自测`,
+          summary: `全面检验您对 ${mTitle} 所有阶段知识体系的掌握程度。`,
+          difficulty: mapDifficulty(mLevel),
+          questionIds: questionIds,
+          timeLimitMinutes: 60,
+          passingScore: 60
+        },
+        {
+          id: `${mId}-exam-2`,
+          slug: "basic-exam",
+          title: `${mTitle} 基础概念快速评估`,
+          summary: `针对核心基础概念的摸底评估，题目精炼。`,
+          difficulty: "easy",
+          questionIds: questionIds.slice(0, Math.ceil(questionIds.length / 2)),
+          timeLimitMinutes: 30,
+          passingScore: 60
+        }
+      ];
+
+      // 5. Generate Learning Routes & link to courses/lessons
+      const routeSteps = [];
+      let stepOrder = 1;
+      enrichedCourses.forEach((c) => {
+        c.lessons.forEach((lId) => {
+          const lessonObj = enrichedLessons.find(l => l.id === lId);
+          routeSteps.push({
+            order: stepOrder++,
+            title: lessonObj.title,
+            description: `学习课时: ${lessonObj.summary}`,
+            courseId: c.id,
+            lessonId: lId
+          });
+        });
+      });
+
+      const enrichedRoutes = [
+        {
+          id: `${mId}-route-1`,
+          slug: "professional-path",
+          title: `${mTitle} 专业级成长路线`,
+          summary: `带您由浅入深、由原理到实战系统通关 ${mTitle} 核心要点。`,
+          steps: routeSteps
+        },
+        {
+          id: `${mId}-route-2`,
+          slug: "quick-start-path",
+          title: `${mTitle} 快速通关极速路线`,
+          summary: `专为快速开发或面试突击设计的速成学习路径。`,
+          steps: routeSteps.filter((s, idx) => idx % 2 === 0)
+        }
+      ];
+
       // 3. Write enriched JSONs
       await fs.writeFile(join(m.path, 'public/data/courses.json'), JSON.stringify(enrichedCourses, null, 2), 'utf-8');
       await fs.writeFile(join(m.path, 'public/data/lessons.json'), JSON.stringify(enrichedLessons, null, 2), 'utf-8');
       await fs.writeFile(join(m.path, 'public/data/questions.json'), JSON.stringify(enrichedQuestions, null, 2), 'utf-8');
+      await fs.writeFile(join(m.path, 'public/data/exams.json'), JSON.stringify(enrichedExams, null, 2), 'utf-8');
+      await fs.writeFile(join(m.path, 'public/data/routes.json'), JSON.stringify(enrichedRoutes, null, 2), 'utf-8');
 
-      console.log(`✅ Enriched content for ${m.category}/${m.name} (${enrichedLessons.length} lessons, ${enrichedQuestions.length} questions)`);
+      console.log(`✅ Enriched content for ${m.category}/${m.name} (${enrichedLessons.length} lessons, ${enrichedQuestions.length} questions, ${enrichedExams.length} exams, ${enrichedRoutes.length} routes)`);
       count++;
     } catch (e) {
       console.error(`❌ Failed to enrich ${m.category}/${m.name}:`, e.message);
