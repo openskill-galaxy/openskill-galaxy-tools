@@ -14,6 +14,7 @@ const filesToCopy = [
   'src/components/Header.tsx',
   'src/components/SearchBox.tsx',
   'src/components/ErrorBoundary.tsx',
+  'src/components/CosmicBackground.tsx',
   'src/components/QuestionPlayer.tsx',
   'src/pages/FavoritesPage.tsx',
   'src/search/search.ts',
