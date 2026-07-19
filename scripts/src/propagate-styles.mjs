@@ -21,9 +21,13 @@ const filesToCopy = [
   'src/components/ErrorBoundary.tsx',
   'src/components/CosmicBackground.tsx',
   'src/components/CodePlayground.tsx',
+  'src/components/RadarChart.tsx',
+  'src/components/KnowledgeGraph.tsx',
   'src/components/QuestionPlayer.tsx',
   'src/components/ExamPlayer.tsx',
   'src/pages/FavoritesPage.tsx',
+  'src/pages/ExamResultPage.tsx',
+  'src/pages/HomePage.tsx',
   'src/search/search.ts',
   'src/utils/markdown.tsx',
   'tailwind.config.js'
