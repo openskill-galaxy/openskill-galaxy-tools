@@ -21,6 +21,8 @@ const filesToCopy = [
   'src/components/ErrorBoundary.tsx',
   'src/components/CosmicBackground.tsx',
   'src/components/CodePlayground.tsx',
+  'src/components/LessonTOC.tsx',
+  'src/components/CodeJudge.tsx',
   'src/components/RadarChart.tsx',
   'src/components/KnowledgeGraph.tsx',
   'src/components/QuestionPlayer.tsx',
@@ -28,6 +30,9 @@ const filesToCopy = [
   'src/pages/FavoritesPage.tsx',
   'src/pages/ExamResultPage.tsx',
   'src/pages/HomePage.tsx',
+  'src/pages/LessonPage.tsx',
+  'src/pages/WrongQuestionsPage.tsx',
+  'src/utils/srs.ts',
   'src/search/search.ts',
   'src/utils/markdown.tsx',
   'tailwind.config.js'
