@@ -32,6 +32,8 @@ const filesToCopy = [
   'src/components/CertificateModal.tsx',
   'src/components/StudyAnalytics.tsx',
   'src/components/SpeechReader.tsx',
+  'src/components/WeakPointDiagnostics.tsx',
+  'src/components/ExportDataModal.tsx',
   'src/components/RadarChart.tsx',
   'src/components/KnowledgeGraph.tsx',
   'src/components/QuestionPlayer.tsx',
