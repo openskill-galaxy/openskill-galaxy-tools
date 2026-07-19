@@ -19,6 +19,7 @@ const filesToCopy = [
   'src/components/CosmicBackground.tsx',
   'src/components/CodePlayground.tsx',
   'src/components/QuestionPlayer.tsx',
+  'src/components/ExamPlayer.tsx',
   'src/pages/FavoritesPage.tsx',
   'src/search/search.ts',
   'src/utils/markdown.tsx',
