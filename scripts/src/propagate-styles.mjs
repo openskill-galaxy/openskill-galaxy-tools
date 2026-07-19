@@ -26,6 +26,8 @@ const filesToCopy = [
   'src/components/PomodoroTimer.tsx',
   'src/components/PersonalNotes.tsx',
   'src/components/CertificateModal.tsx',
+  'src/components/StudyAnalytics.tsx',
+  'src/components/SpeechReader.tsx',
   'src/components/RadarChart.tsx',
   'src/components/KnowledgeGraph.tsx',
   'src/components/QuestionPlayer.tsx',
