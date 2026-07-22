@@ -37,6 +37,8 @@ const filesToCopy = [
   'src/components/ExportDataModal.tsx',
   'src/components/AchievementsModal.tsx',
   'src/components/LessonContentSearch.tsx',
+  'src/components/QuizSpeedRunModal.tsx',
+  'src/components/KeyboardShortcutsModal.tsx',
   'src/components/RadarChart.tsx',
   'src/components/KnowledgeGraph.tsx',
   'src/components/QuestionPlayer.tsx',
