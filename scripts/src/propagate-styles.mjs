@@ -10,6 +10,7 @@ const filesToCopy = [
   'vite.config.ts',
   'public/sw.js',
   'public/manifest.json',
+  'public/404.html',
   'src/styles/index.css',
   'src/main.tsx',
   'src/App.tsx',
