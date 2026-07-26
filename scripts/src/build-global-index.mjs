@@ -37,7 +37,8 @@ async function main() {
       const modJsonPath = join(m.path, 'public/data/module.json');
       const modMeta = JSON.parse(await fs.readFile(modJsonPath, 'utf-8'));
       const mTitle = modMeta.title || m.name;
-      const mSlug = m.name.toLowerCase();
+      // 必须用 module.json 的真实 slug（module-*），门户 SearchBox 靠它匹配 modules.json
+      const mSlug = modMeta.slug || m.name.toLowerCase();
 
       // 2. Read lessons
       const lessonsPath = join(m.path, 'public/data/lessons.json');
