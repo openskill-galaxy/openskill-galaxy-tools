@@ -1,4 +1,4 @@
-# OpenSkill Galaxy — 4-Tier Opaque-Box E2E Test Suite
+# OpenSkill Galaxy regression tests
 
 Self-contained, deterministic ESM test suite for validating the OpenSkill Galaxy Portal (`openskill-galaxy.github.io`), Module Template (`module-template`), Toolchain (`openskill-galaxy-tools/scripts`), and all 60 Learning Modules (`module-*`).
 
@@ -21,7 +21,7 @@ This reuses locally cached `@playwright/test` and Playwright Chromium / system G
 | `npm run test:tier3` | Tier 3: Cross-feature pairwise interactions (Portal↔Module deep-links, same-origin `localStorage` isolation, diagnostics, modals, TOC/playground) | Built `dist/` for Portal, Template, and representative modules |
 | `npm run test:tier4` | Tier 4: 6 End-to-End real-world user & release pipeline scenarios | Built `dist/` for Portal, Template, and representative modules |
 | `npm run test:tier5` | Tier 5: Adversarial regression & parity checks (QuizSpeedRun `judge`, fixed modal containment, CodePlayground/scrollProgress reset, ExamResult reload, WeakPointDiagnostics fallback, WrongQuestions SM-2, Portal filters/tabs/Backup/SearchBox) | Built `dist/` for Portal, Template, and representative modules |
-| `npm run test:e2e` | Full 4-Tier suite (`test:tier1` → `test:tier4`) | Full workspace build |
+| `npm run test:e2e` | Complete suite from `test:tier1` through `test:tier5` | Full workspace build |
 
 ## Environment Variables
 
