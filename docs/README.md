@@ -6,6 +6,7 @@
 
 | 文件 | 说明 |
 |------|------|
+| [学习者需求与产品覆盖调查](LEARNER_NEEDS_REVIEW_2026-11.md) | 2026 年 11 月市场对照、线上核查与功能验收 |
 | `MODULE_WORKFLOW.md` | 模块开发完整工作流 |
 | `DATA_QUALITY_GUIDE.md` | 数据质量规范 |
 | `GITHUB_PAGES_DEPLOY_GUIDE.md` | Pages 部署指南 |

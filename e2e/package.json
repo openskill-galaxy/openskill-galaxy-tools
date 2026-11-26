@@ -1,0 +1,19 @@
+{
+  "name": "openskill-galaxy-e2e",
+  "version": "1.0.0",
+  "description": "Opaque-box 4-tier E2E test suite for OpenSkill Galaxy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:self": "node --test tests/self-check.test.mjs",
+    "test:tier1": "node --test tests/tier1/*.test.mjs && npx playwright test tests/tier1",
+    "test:tier2": "node --test tests/tier2/*.test.mjs && npx playwright test tests/tier2",
+    "test:tier3": "npx playwright test tests/tier3",
+    "test:tier4": "npx playwright test tests/tier4",
+    "test:tier5": "npx playwright test tests/tier5",
+    "test:e2e": "npm run test:tier1 && npm run test:tier2 && npm run test:tier3 && npm run test:tier4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

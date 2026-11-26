@@ -1,90 +1,89 @@
+#!/usr/bin/env node
 import fs from 'fs/promises';
+import { isPublished } from './utils/editorial.mjs';
 import { resolve, join } from 'path';
+import { getPortalDir, getModuleDirs } from './utils/workspace.mjs';
+import { hasFlag, getArgValue } from './utils/cli-utils.mjs';
 
-const workspaceRoot = 'C:/WJH/Wonderful/openskill-galaxy';
-const portalIndexDest = 'C:/WJH/Wonderful/openskill-galaxy/00-平台与协作/官网门户/public/data/global-search-index.json';
-
-async function getModuleDirs() {
-  const dirs = [];
-  const entries = await fs.readdir(workspaceRoot, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'node_modules') continue;
-    const catPath = join(workspaceRoot, entry.name);
-    const subEntries = await fs.readdir(catPath, { withFileTypes: true });
-    for (const subEntry of subEntries) {
-      if (!subEntry.isDirectory() || subEntry.name === '.git' || subEntry.name === 'node_modules' || subEntry.name === '模块模板') continue;
-      const modulePath = join(catPath, subEntry.name);
-      try {
-        const stat = await fs.stat(join(modulePath, 'public/data/module.json'));
-        if (stat.isFile()) {
-          dirs.push({ category: entry.name, name: subEntry.name, path: modulePath });
-        }
-      } catch {}
-    }
+async function readActivityCatalog(moduleDir, lessons) {
+  const path = join(moduleDir, 'activities/catalog.json');
+  let source;
+  try {
+    source = await fs.readFile(path, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return new Map();
+    throw error;
   }
-  return dirs;
+  const catalog = JSON.parse(source);
+  if (!catalog || typeof catalog !== 'object' || Array.isArray(catalog)) throw new Error(path + ': expected an object');
+  const titles = new Map(Object.entries(catalog));
+  const lessonIds = new Set(lessons.map((lesson) => lesson.id));
+  for (const [id, title] of titles) {
+    if (!lessonIds.has(id) || typeof title !== 'string' || !title.trim()) throw new Error(path + ': invalid activity for ' + id);
+  }
+  return titles;
 }
 
 async function main() {
-  const moduleDirs = await getModuleDirs();
-  console.log(`Scanning content for ${moduleDirs.length} modules to build global search index...\n`);
+  const argv = process.argv.slice(2);
+  const pretty = hasFlag(argv, '--pretty');
+  const dryRun = hasFlag(argv, '--dry-run');
+  const outputPath = getArgValue(argv, '--output');
+  const portalIndexDest = outputPath
+    ? resolve(outputPath)
+    : join(getPortalDir(), 'public/data/global-search-index.json');
+
+  const moduleDirs = getModuleDirs();
+  console.log(
+    `Scanning content for ${moduleDirs.length} modules to build global search index${dryRun ? ' [DRY RUN]' : ''}...\n`
+  );
 
   const globalIndex = [];
 
   for (const m of moduleDirs) {
-    try {
-      // 1. Read module title
-      const modJsonPath = join(m.path, 'public/data/module.json');
-      const modMeta = JSON.parse(await fs.readFile(modJsonPath, 'utf-8'));
-      const mTitle = modMeta.title || m.name;
-      // 必须用 module.json 的真实 slug（module-*），门户 SearchBox 靠它匹配 modules.json
-      const mSlug = modMeta.slug || m.name.toLowerCase();
-
-      // 2. Read lessons
-      const lessonsPath = join(m.path, 'public/data/lessons.json');
+    const dataDir = join(m.path, 'public/data');
+    async function read(name) {
+      const path = join(dataDir, name + '.json');
       try {
-        const lessons = JSON.parse(await fs.readFile(lessonsPath, 'utf-8'));
-        lessons.forEach(l => {
-          globalIndex.push({
-            id: l.id,
-            slug: l.slug,
-            title: l.title,
-            summary: l.summary,
-            type: "lesson",
-            moduleTitle: mTitle,
-            moduleSlug: mSlug
-          });
-        });
-      } catch {}
+        return JSON.parse(await fs.readFile(path, 'utf8'));
+      } catch (error) {
+        throw new Error(path + ': ' + error.message);
+      }
+    }
 
-      // 3. Read questions
-      const questionsPath = join(m.path, 'public/data/questions.json');
-      try {
-        const questions = JSON.parse(await fs.readFile(questionsPath, 'utf-8'));
-        questions.forEach(q => {
-          globalIndex.push({
-            id: q.id,
-            slug: q.slug,
-            title: q.stem.length > 80 ? q.stem.slice(0, 80) + "..." : q.stem,
-            summary: (q.explanation || "").slice(0, 120),
-            type: "question",
-            moduleTitle: mTitle,
-            moduleSlug: mSlug
-          });
-        });
-      } catch {}
-
-    } catch (e) {
-      console.warn(`⚠️ Warning: Failed to scan files for index on ${m.name}: ${e.message}`);
+    const [meta, lessons, questions] = await Promise.all([read('module'), read('lessons'), read('questions')]);
+    const activityTitles = await readActivityCatalog(m.path, lessons);
+    const moduleInfo = { moduleTitle: meta.title || m.name, moduleSlug: meta.slug || m.name };
+    for (const lesson of lessons.filter(isPublished)) {
+      globalIndex.push({
+        id: lesson.id, slug: lesson.slug, title: lesson.title, summary: lesson.summary,
+        type: 'lesson', estimatedMinutes: lesson.estimatedMinutes, activityTitle: activityTitles.get(lesson.id), ...moduleInfo,
+      });
+    }
+    for (const question of questions.filter(isPublished)) {
+      globalIndex.push({
+        id: question.id, slug: question.slug,
+        title: question.stem.length > 80 ? question.stem.slice(0, 80) + '...' : question.stem,
+        summary: (question.explanation || '').slice(0, 120), type: 'question', ...moduleInfo,
+      });
     }
   }
 
-  // Ensure directory exists
-  await fs.mkdir(resolve(portalIndexDest, '..'), { recursive: true });
-  await fs.writeFile(portalIndexDest, JSON.stringify(globalIndex, null, 2), 'utf-8');
+  const serialized = pretty ? JSON.stringify(globalIndex, null, 2) + '\n' : JSON.stringify(globalIndex);
+  const bytes = Buffer.byteLength(serialized, 'utf-8');
 
-  console.log(`\n✅ Global search index updated with ${globalIndex.length} items!`);
-  console.log(`Saved to: ${portalIndexDest}`);
+  if (!dryRun) {
+    await fs.mkdir(resolve(portalIndexDest, '..'), { recursive: true });
+    await fs.writeFile(portalIndexDest, serialized, 'utf-8');
+  }
+
+  console.log(
+    `\n✅ Global search index ${dryRun ? 'previewed' : 'updated'} with ${globalIndex.length} items (${(bytes / 1024).toFixed(1)} KB, ${pretty ? 'pretty' : 'minified'})!`
+  );
+  console.log(`${dryRun ? 'Target' : 'Saved to'}: ${portalIndexDest}`);
 }
 
-main().catch(console.error);
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

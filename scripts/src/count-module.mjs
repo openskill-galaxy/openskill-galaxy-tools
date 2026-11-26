@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { isPublished } from './utils/editorial.mjs';
 import { readModuleData } from './utils/read-json.mjs';
 import { getDataDir } from './utils/path-utils.mjs';
 import fs from 'fs/promises';
@@ -21,7 +22,7 @@ async function main() {
   // Basic counts
   for (const f of DATA_FILES) {
     const arr = data[f];
-    console.log(`${f.padEnd(22)} ${Array.isArray(arr) ? arr.length : 'N/A'}`);
+    console.log(`${f.padEnd(22)} ${Array.isArray(arr) ? arr.filter(isPublished).length : 'N/A'}`);
   }
 
   // Question type breakdown

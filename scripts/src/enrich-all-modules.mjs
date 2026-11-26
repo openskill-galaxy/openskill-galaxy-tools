@@ -1,7 +1,8 @@
+import { WORKSPACE_ROOT, getPortalDir, getTemplateDir, getToolsDir, getModuleDirs as discoverModuleDirs } from './utils/workspace.mjs';
 import fs from 'fs/promises';
 import { resolve, join } from 'path';
 
-const workspaceRoot = 'C:/WJH/Wonderful/openskill-galaxy';
+const workspaceRoot = WORKSPACE_ROOT;
 
 // Detailed course templates for major categories to ensure premium, realistic contents
 const domainTemplates = {
@@ -73,24 +74,7 @@ const domainTemplates = {
 };
 
 async function getModuleDirs() {
-  const dirs = [];
-  const entries = await fs.readdir(workspaceRoot, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'node_modules') continue;
-    const catPath = join(workspaceRoot, entry.name);
-    const subEntries = await fs.readdir(catPath, { withFileTypes: true });
-    for (const subEntry of subEntries) {
-      if (!subEntry.isDirectory() || subEntry.name === '.git' || subEntry.name === 'node_modules') continue;
-      const modulePath = join(catPath, subEntry.name);
-      try {
-        const stat = await fs.stat(join(modulePath, 'public/data/module.json'));
-        if (stat.isFile()) {
-          dirs.push({ category: entry.name, name: subEntry.name, path: modulePath });
-        }
-      } catch {}
-    }
-  }
-  return dirs;
+  return discoverModuleDirs();
 }
 
 // Generate realistic question pool
@@ -124,6 +108,11 @@ function mapDifficulty(level) {
 }
 
 async function main() {
+  if (!process.argv.slice(2).includes('--confirm-overwrite')) {
+    console.error('[DEPRECATED / DESTRUCTIVE] enrich-all-modules.mjs overwrites real module courses, lessons, questions, exams, and routes with boilerplate!');
+    console.error('Refusing to run without --confirm-overwrite.');
+    process.exit(1);
+  }
   const modules = await getModuleDirs();
   console.log(`Enriching data contents for ${modules.length} modules...\n`);
 

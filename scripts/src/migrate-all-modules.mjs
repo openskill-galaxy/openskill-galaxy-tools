@@ -1,9 +1,10 @@
+import { WORKSPACE_ROOT, getPortalDir, getTemplateDir, getToolsDir, getModuleDirs as discoverModuleDirs } from './utils/workspace.mjs';
 import fs from 'fs/promises';
 import { resolve, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const workspaceRoot = 'C:/WJH/Wonderful/openskill-galaxy';
+const workspaceRoot = WORKSPACE_ROOT;
 const DATA_FILES = ['courses', 'lessons', 'knowledge-points', 'questions', 'exams', 'cases', 'routes', 'glossary', 'faqs', 'tags'];
 
 function slugify(text) {
@@ -15,24 +16,7 @@ function slugify(text) {
 }
 
 async function getModuleDirs() {
-  const dirs = [];
-  const entries = await fs.readdir(workspaceRoot, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'node_modules') continue;
-    const catPath = join(workspaceRoot, entry.name);
-    const subEntries = await fs.readdir(catPath, { withFileTypes: true });
-    for (const subEntry of subEntries) {
-      if (!subEntry.isDirectory() || subEntry.name === '.git' || subEntry.name === 'node_modules') continue;
-      const modulePath = join(catPath, subEntry.name);
-      try {
-        const stat = await fs.stat(join(modulePath, 'public/data/module.json'));
-        if (stat.isFile() && subEntry.name !== '模块模板') {
-          dirs.push({ category: entry.name, name: subEntry.name, path: modulePath });
-        }
-      } catch {}
-    }
-  }
-  return dirs;
+  return discoverModuleDirs();
 }
 
 function parseWrongReason(wrongReason) {
@@ -346,6 +330,11 @@ async function migrateModule(m) {
 }
 
 async function main() {
+  if (!process.argv.slice(2).includes('--confirm-overwrite')) {
+    console.error('[DEPRECATED / DESTRUCTIVE] migrate-all-modules.mjs rewrites all 10 data JSONs with legacy dual fields and an incompatible search-index.json!');
+    console.error('Refusing to run without --confirm-overwrite.');
+    process.exit(1);
+  }
   const modules = await getModuleDirs();
   console.log(`Starting migration for ${modules.length} modules...\n`);
   
